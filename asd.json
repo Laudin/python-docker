@@ -1,0 +1,25 @@
+{
+    "id": "D1B825DD-E500-0000-00003CC8",
+    "payload": {
+        "Content-Transfer-Encoding": "7bit",
+        "Content-Type": "text/plain; charset=utf-8",
+        "Date": "Fri, 26 Jan 2024 13:18:04 +0000",
+        "Feedback-Id": "1.us-west-2.kWp6r4c34g+725VxVMj/LnMXjZdR6uMGuHupnJXFLtU=:AmazonSES",
+        "From": "TradingView <noreply@tradingview.com>",
+        "Message-Id": "<0101018d45eb9a3b-92af96d8-42a1-48d3-990e-e333b0c9f989-000000@us-west-2.amazonses.com>",
+        "Mime-Version": "1.0",
+        "Subject": "Alert: 1m PERP RSI AVG CROSS",
+        "To": "news-76edf3@proxiedmail.com",
+        "X-Envelope-From": "0101018d45eb9a3b-92af96d8-42a1-48d3-990e-e333b0c9f989-000000@west-smtp.tradingview.com",
+        "X-Mailgun-Incoming": "Yes",
+        "X-Ses-Outgoing": "2024.01.26-54.240.26.8",
+        "body-plain": {
+            "symbol": "PERPUSDT",
+            "side": "sell",
+            "qty": "2.515",
+            "price": "1.14809",
+            "signalId": "ab20e249-727d-4f",
+            "uid": "a7e0f576ccd94115bbd873a4eb9ecec9d17c56103c1a4610000a0c41db57a87d"
+        }
+    }
+}
