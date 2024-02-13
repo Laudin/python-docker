@@ -110,7 +110,7 @@ positions = client.futures_account()['positions']
 value = next((item for item in positions if item.get('symbol') == 'PERPUSDT'), None)['positionAmt']
 print(float(value) == 5)
 
-def run(server_class=HTTPServer, handler_class=S, port=5000):
+def run(server_class=HTTPServer, handler_class=S, port=3000):
     server_address = ('', port)
     httpd = server_class(server_address, handler_class)
     print('Starting httpd...')
