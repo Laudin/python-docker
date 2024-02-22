@@ -25,9 +25,9 @@ start = False
 # print(f"Ingress established at {listener.url()}")
 
 coins_op = {
-    'PERPUSDT': {'leverage':10, 'quantity': 5}, # hotmail - 3MIN
+    'PERPUSDT': {'leverage':10, 'quantity': 5}, # hotmail - 5MIN
     'BTCUSDT': {'leverage':125, 'quantity': 0.003}, # laudin - 15MIN
-    'ETHUSDT': {'leverage':100, 'quantity': 0.0015} # gaston - 5MIN
+    'ETHUSDT': {'leverage':100, 'quantity': 0.015} # gaston - 5MIN
 }
 
 class S(BaseHTTPRequestHandler):
@@ -86,7 +86,7 @@ class S(BaseHTTPRequestHandler):
             'symbol': symbol,
             'type': 'MARKET',
             'side':  side,
-            'quantity': coins_op['PERPUSDT']['quantity'], # EQUITY * LEVERAGE
+            'quantity': coins_op[symbol]['quantity'], # EQUITY * LEVERAGE
             # 'timestamp': time.time(),
             'recvWindow': 10000
         }
