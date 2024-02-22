@@ -25,9 +25,9 @@ start = False
 # print(f"Ingress established at {listener.url()}")
 
 coins_op = {
-    'PERPUSDT': {'leverage':10, 'quantity': 5},
-    'BTCUSDT': {'leverage':125, 'quantity': 0.003},
-    'ETHUSDT': {'leverage':100, 'quantity': 0.0015}
+    'PERPUSDT': {'leverage':10, 'quantity': 5}, # hotmail - 3MIN
+    'BTCUSDT': {'leverage':125, 'quantity': 0.003}, # laudin - 15MIN
+    'ETHUSDT': {'leverage':100, 'quantity': 0.0015} # gaston - 5MIN
 }
 
 class S(BaseHTTPRequestHandler):
@@ -81,11 +81,6 @@ class S(BaseHTTPRequestHandler):
             'recvWindow': 10000
         }
 
-        ## Checks for existing positions
-        positions = client.futures_account()['positions']
-        positionAmt = float(next((item for item in positions if item.get('symbol') == symbol), None)['positionAmt'])
-        
-        if (positionAmt == 0): return
             
         params2 = {
             'symbol': symbol,
@@ -99,12 +94,19 @@ class S(BaseHTTPRequestHandler):
             order = client.futures_create_order(**params)
             print(order)
 
-            global start
-            if (not start): 
-                order2 = client.futures_create_order(**params2)
-                print(order2)
+            ## Checks for existing positions
+            # positions = client.futures_account()['positions']
+            # positionAmt = float(next((item for item in positions if item.get('symbol') == symbol), None)['positionAmt'])
+            
+            # if (positionAmt == 0): return
 
-            start = False
+            # order2 = client.futures_create_order(**params2)
+            # print(order2)
+            
+            # global start
+            # if (not start): 
+
+            # start = False
         except BinanceAPIException as error:
             logging.error(
                 "Found error. status: {}, error code: {}, error message: {}".format(
