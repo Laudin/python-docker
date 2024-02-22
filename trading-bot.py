@@ -27,6 +27,7 @@ start = False
 coins_op = {
     'PERPUSDT': {'leverage':10, 'quantity': 5}, # hotmail - 5MIN
     'BTCUSDT': {'leverage':125, 'quantity': 0.003}, # laudin - 15MIN
+    'DOGEUSDT': {'leverage':60, 'quantity': 45}, # laudin - 15MIN
     'ETHUSDT': {'leverage':100, 'quantity': 0.015} # gaston - 5MIN
 }
 
