@@ -24,6 +24,12 @@ start = False
 # Output ngrok url to console
 # print(f"Ingress established at {listener.url()}")
 
+coins_op = {
+    'PERPUSDT': {'leverage':10, 'quantity': 5},
+    'BTCUSDT': {'leverage':125, 'quantity': 0.003},
+    'ETHUSDT': {'leverage':100, 'quantity': 0.0015}
+}
+
 class S(BaseHTTPRequestHandler):
     def _set_headers(self):
         self.send_response(200)
@@ -49,14 +55,16 @@ class S(BaseHTTPRequestHandler):
         data = json.loads(rawData["payload"]["body-plain"])
         self._set_headers()
         print(data)
-
+        
         if (data['side'] == 'buy'):
             side = 'BUY'
         if (data['side'] == 'sell'):
             side = 'SELL'
 
+        symbol = data['symbol']
+
         try:
-            client.futures_change_leverage(symbol='PERPUSDT', leverage=10)
+            client.futures_change_leverage(symbol=symbol, leverage=10)
         except BinanceAPIException as error:
             logging.error(
                 "Found error. status: {}, error code: {}, error message: {}".format(
@@ -65,7 +73,7 @@ class S(BaseHTTPRequestHandler):
             )
 
         params = {
-            'symbol': 'PERPUSDT',
+            'symbol': symbol,
             'type': 'MARKET',
             'side':  side,
             'quantity': 1*5, # EQUITY * LEVERAGE
@@ -73,16 +81,16 @@ class S(BaseHTTPRequestHandler):
             'recvWindow': 10000
         }
 
+        ## Checks for existing positions
         positions = client.futures_account()['positions']
-        positionAmt = float(next((item for item in positions if item.get('symbol') == 'PERPUSDT'), None)['positionAmt'])
+        positionAmt = float(next((item for item in positions if item.get('symbol') == symbol), None)['positionAmt'])
         
         if (positionAmt != 0): return
             
         params2 = {
-            'symbol': 'PERPUSDT',
+            'symbol': symbol,
             'type': 'MARKET',
             'side':  side,
-            # 'side':  'SELL' if side == 'buy' else 'BUY',
             'quantity': 1*5, # EQUITY * LEVERAGE
             # 'timestamp': time.time(),
             'recvWindow': 10000
@@ -106,10 +114,6 @@ class S(BaseHTTPRequestHandler):
 
         self.send_response(200)
 
-positions = client.futures_account()['positions']
-value = next((item for item in positions if item.get('symbol') == 'PERPUSDT'), None)['positionAmt']
-print(float(value) == 5)
-
 def run(server_class=HTTPServer, handler_class=S, port=3000):
     server_address = ('', port)
     httpd = server_class(server_address, handler_class)
@@ -128,65 +132,3 @@ if __name__ == "__main__":
         run(port=int(argv[1]))
     else:
         run()
-
-##### ---------------- ######
-
-# import json
-# import logging
-# from binance.client import Client
-# from binance.exceptions import BinanceAPIException
-
-# api_key="7mKs2i0osnp0LcXxGvh6UNxBLpEzVeFpKhjdcbogte4A8MSjwINKsMP3Ea8ZNZsQ"
-# api_secret="92tfpqq7qV6IuXK3c0yL05Yo8059brllLcqE3lLiByxTSACirebnlJsaZM5LyQW1"
-
-# client = Client(api_key, api_secret)
-
-# def lambda_handler(event, context):
-#     body = event['body']
-#     side = ''
-    
-#     if (body['side'] == 'buy'):
-#         side = 'BUY'
-#     if (body['side'] == 'sell'):
-#         side = 'SELL'
-
-#     try:
-#         client.futures_change_leverage(symbol='PERPUSDT', leverage=20)
-#     except BinanceAPIException as error:
-#         logging.error(
-#             "Found error. status: {}, error code: {}, error message: {}".format(
-#                 error.code, error.message
-#             )
-#         )
-
-#     params = {
-#         'symbol': 'PERPUSDT',
-#         'type': 'MARKET',
-#         'side':  side,
-#         'quantity': 1*20 # EQUITY * LEVERAGE
-#     }
-#     try:
-#         order = client.futures_create_order(**params)
-#         print(order)
-#     except BinanceAPIException as error:
-#         logging.error(
-#             "Found error. status: {}, error code: {}, error message: {}".format(
-#                 error.code, error.message
-#             )
-#         )
-
-#     return {
-#         'statusCode': 200,
-#         'body': json.dumps(order)
-#     }
-
-# event = {
-#     "body": 
-#         {
-#             "symbol": "PERPUSDT",
-#             "side": "sell",
-#         }
-    
-# }
-
-# lambda_handler(event,"")
