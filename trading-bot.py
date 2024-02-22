@@ -64,7 +64,7 @@ class S(BaseHTTPRequestHandler):
         symbol = data['symbol']
 
         try:
-            client.futures_change_leverage(symbol=symbol, leverage=10)
+            client.futures_change_leverage(symbol=symbol, leverage=coins_op[symbol]['leverage'])
         except BinanceAPIException as error:
             logging.error(
                 "Found error. status: {}, error code: {}, error message: {}".format(
@@ -76,7 +76,7 @@ class S(BaseHTTPRequestHandler):
             'symbol': symbol,
             'type': 'MARKET',
             'side':  side,
-            'quantity': 1*5, # EQUITY * LEVERAGE
+            'quantity': coins_op[symbol]['quantity'], # EQUITY * LEVERAGE
             # 'timestamp': time.time(),
             'recvWindow': 10000
         }
@@ -85,13 +85,13 @@ class S(BaseHTTPRequestHandler):
         positions = client.futures_account()['positions']
         positionAmt = float(next((item for item in positions if item.get('symbol') == symbol), None)['positionAmt'])
         
-        if (positionAmt != 0): return
+        if (positionAmt == 0): return
             
         params2 = {
             'symbol': symbol,
             'type': 'MARKET',
             'side':  side,
-            'quantity': 1*5, # EQUITY * LEVERAGE
+            'quantity': coins_op['PERPUSDT']['quantity'], # EQUITY * LEVERAGE
             # 'timestamp': time.time(),
             'recvWindow': 10000
         }
