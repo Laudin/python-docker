@@ -25,13 +25,30 @@ start = False
 # print(f"Ingress established at {listener.url()}")
 
 coins_op = {
-    'PERPUSDT': {'leverage':10, 'quantity': 5}, # hotmail - 5MIN
-    'BTCUSDT': {'leverage':125, 'quantity': 0.003}, # laudin - 15MIN
-    'DOGEUSDT': {'leverage':60, 'quantity': 45}, # laudin - 15MIN
-    'ETHUSDT': {'leverage':100, 'quantity': 0.015} # gaston - 5MIN
+    'BTCUSDT': {'leverage':125, 'quantity': 0.003},
+    'ETHUSDT': {'leverage':100, 'quantity': 0.015},
+    'BNBUSDT': {'leverage':60, 'quantity': 0.02},
+    'DOGEUSDT': {'leverage':60, 'quantity': 45},
+    'SOLUSDT': {'leverage':80, 'quantity': 1},
+    'MATICUSDT': {'leverage':60, 'quantity': 10},
+    'XRPUSDT': {'leverage':60, 'quantity': 15},
+    'ADAUSDT': {'leverage':60, 'quantity': 15},
+    'FILUSDT': {'leverage':60, 'quantity': 1},
+    'CAKEUSDT': {'leverage':20, 'quantity': 3},
+    'DOTUSDT': {'leverage':60, 'quantity': 1},
+    'NEARUSDT': {'leverage':50, 'quantity': 3},
+    'AAVEUSDT': {'leverage':45, 'quantity': 0.3},
+    'MINAUSDT': {'leverage':45, 'quantity': 6},
+    'FTMUSDT': {'leverage':45, 'quantity': 17},
+    'SANDUSDT': {'leverage':45, 'quantity': 15},
+    'IMXUSDT': {'leverage':45, 'quantity': 4},
+    'ICPUSDT': {'leverage':25, 'quantity': 3},
+    'PERPUSDT': {'leverage':10, 'quantity': 5},
+    'STXUSDT': {'leverage':20, 'quantity': 4},
+    'RNDRUSDT': {'leverage':20, 'quantity': 1},
 }
 
-class S(BaseHTTPRequestHandler):
+class Handler(BaseHTTPRequestHandler):
     def _set_headers(self):
         self.send_response(200)
         self.send_header('Content-type', 'text/html')
@@ -39,85 +56,70 @@ class S(BaseHTTPRequestHandler):
 
     def do_GET(self):
         self._set_headers()
-
-        # positions = client.get_all_orders()
-        # print(positions)
         self.send_response(200)
-
 
     def do_HEAD(self):
         self._set_headers()
 
     def do_POST(self):
         content_length = int(self.headers['Content-Length'])
-        print(content_length)
-
         rawData = json.loads((self.rfile.read(content_length).decode("utf-8")))
         data = json.loads(rawData["payload"]["body-plain"])
         self._set_headers()
         print(data)
         
-        if (data['side'] == 'buy'):
-            side = 'BUY'
-        if (data['side'] == 'sell'):
-            side = 'SELL'
-
-        symbol = data['symbol']
-
-        try:
-            client.futures_change_leverage(symbol=symbol, leverage=coins_op[symbol]['leverage'])
-        except BinanceAPIException as error:
-            logging.error(
-                "Found error. status: {}, error code: {}, error message: {}".format(
-                    error.code, error.message
-                )
-            )
-
-        params = {
-            'symbol': symbol,
-            'type': 'MARKET',
-            'side':  side,
-            'quantity': coins_op[symbol]['quantity'], # EQUITY * LEVERAGE
-            # 'timestamp': time.time(),
-            'recvWindow': 10000
-        }
-
-            
-        params2 = {
-            'symbol': symbol,
-            'type': 'MARKET',
-            'side':  side,
-            'quantity': coins_op[symbol]['quantity'], # EQUITY * LEVERAGE
-            # 'timestamp': time.time(),
-            'recvWindow': 10000
-        }
-        try:
-            order = client.futures_create_order(**params)
-            print(order)
-
-            ## Checks for existing positions
-            # positions = client.futures_account()['positions']
-            # positionAmt = float(next((item for item in positions if item.get('symbol') == symbol), None)['positionAmt'])
-            
-            # if (positionAmt == 0): return
-
-            # order2 = client.futures_create_order(**params2)
-            # print(order2)
-            
-            # global start
-            # if (not start): 
-
-            # start = False
-        except BinanceAPIException as error:
-            logging.error(
-                "Found error. status: {}, error code: {}, error message: {}".format(
-                    error.code, error.message
-                )
-            )
+        entry_position(data)
 
         self.send_response(200)
 
-def run(server_class=HTTPServer, handler_class=S, port=3000):
+
+def entry_position(data):
+    if (data['side'] == 'buy'):
+            side = 'BUY'
+    if (data['side'] == 'sell'):
+        side = 'SELL'
+
+    symbol = data['symbol']
+    params = {
+        'symbol': symbol,
+        'type': 'MARKET',
+        'side':  side,
+        'quantity': coins_op[symbol]['quantity'], # EQUITY * LEVERAGE
+        # 'timestamp': time.time(),
+        'recvWindow': 10000
+    }
+
+    if 'exit' in data['id']:
+        try:
+            # Checks for existing positions
+            positions = client.futures_account()['positions']
+            positionAmt = float(next((item for item in positions if item.get('symbol') == symbol), None)['positionAmt'])
+            
+            if (positionAmt == 0): return
+
+            order = client.futures_create_order(**params)
+            print(order)
+        except BinanceAPIException as error:
+            logging.error(
+                "Found error. status: {}, error code: {}, error message: {}".format(
+                    error.code, error.message
+                )
+            )
+    else:
+        try:
+            client.futures_change_leverage(symbol=symbol, leverage=coins_op[symbol]['leverage'])
+            client.futures_change_margin_type(symbol=symbol, marginType='ISOLATED')
+            order = client.futures_create_order(**params)
+            print(order)
+
+        except BinanceAPIException as error:
+            logging.error(
+                "Found error. status: {}, error code: {}, error message: {}".format(
+                    error.code, error.message
+                )
+            )
+
+def run(server_class=HTTPServer, handler_class=Handler, port=3000):
     server_address = ('', port)
     httpd = server_class(server_address, handler_class)
     print('Starting httpd...')
